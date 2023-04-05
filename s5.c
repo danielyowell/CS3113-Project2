@@ -9,33 +9,54 @@
 #include <sys/shm.h>
 #include <string.h>
 #include <fcntl.h>
-
-
 #include <sys/sem.h>
 #include <sys/ipc.h>
 
+// * SHARED MEMORY
+
 /* key number */
 #define SHMKEY ((key_t) 1497)
-
 /* defines struct shared_mem with int variable "value" */
 typedef struct
 {
     int value;
 } shared_mem;
-
 /* create shared memory (pointer) */
 shared_mem *total;
 
-#define MAX_THREADS 4
+// * SEMAPHORES
+
+/* semaphore key */
+#define SEMKEY ((key_t) 400L)
+
+/* number of semaphores being created */
+#define NSEMS 1
+
+/* GLOBAL */
+int semaphore_id; /* semaphore id */
+
+/* semaphore buffers */
+static struct sembuf OP = {0,-1,SEM_UNDO};
+static struct sembuf OV = {0,1,SEM_UNDO};
 
 // Union to store the value of the semaphore.
-union semun {
+typedef union {
   int val;
   struct semid_ds *buf;
   ushort *array;
-} argument;
+} semunion;
 
-// PROCESSES
+/* function for semaphore to protect critical section */
+int POP(){
+return semop(sem_id, &OP,1);
+}
+
+/* function for semaphore to release protection */
+int VOP(){
+return semop(sem_id, &OV,1);
+}
+
+// * PROCESSES
 void process1() {
     for(int x = 0; x < 100000; x++) {
         total->value = total->value + 1;
@@ -74,7 +95,7 @@ int main(void) {
     total->value = 0;
 
   // * SEMAPHORE INITIALIZATION
-  int semaphore_id, status;
+  int status;
   pid_t pid;
   int cpid;
   struct sembuf semaphore;
@@ -84,8 +105,9 @@ int main(void) {
     perror("Error creating semaphore");
     exit(1);
   }
-  argument.val = 1;
-  status = semctl(semaphore_id, 0, SETVAL, argument);
+  semunion su;
+  su.val = 1;
+  status = semctl(semaphore_id, 0, SETVAL, su);
   if (status < 0) {
     perror("Error setting semaphore value");
     exit(1);
