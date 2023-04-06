@@ -39,7 +39,7 @@ int semaphore_id; /* semaphore id */
 static struct sembuf OP = {0,-1,SEM_UNDO};
 static struct sembuf OV = {0,1,SEM_UNDO};
 
-// Union to store the value of the semaphore.
+/* union to store semaphore value (I think struct also works) */
 typedef union {
   int val;
   struct semid_ds *buf;
@@ -102,14 +102,14 @@ int main(void) {
   // Create a semaphore with an initial value of 1.
   semaphore_id = semget(IPC_PRIVATE, 1, 0666 | IPC_CREAT);
   if (semaphore_id < 0) {
-    perror("Error creating semaphore");
+    perror("Could not create semaphore");
     exit(1);
   }
   semunion su;
   su.val = 1;
   status = semctl(semaphore_id, 0, SETVAL, su);
   if (status < 0) {
-    perror("Error setting semaphore value");
+    perror("Could not set semaphore value");
     exit(1);
   }
 
