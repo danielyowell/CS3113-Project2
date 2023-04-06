@@ -179,7 +179,7 @@ int main(void) {
                     printf("Child with ID: %d has just exited.\n", cpid);
                     // detach shared memory
                     if (shmdt(total) == -1) {
-                        perror ("shmdt");
+                        perror ("shmdt error (could not detach shared memory)");
                         exit (-1);
                     }   
                     // delete shared memory
@@ -187,8 +187,8 @@ int main(void) {
 
                     // Remove the semaphore.
                     status = semctl(semaphore_id, 0, IPC_RMID);
-                    if (status < 0) {
-                        perror("Error removing semaphore");
+                    if (status == -1) {
+                        perror("semctl error (could not remove semaphore)");
                         exit(1);
                     }
 
