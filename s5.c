@@ -48,12 +48,12 @@ typedef union {
 
 /* function for semaphore to protect critical section */
 int POP(){
-return semop(sem_id, &OP,1);
+return semop(semaphore_id, &OP,1);
 }
 
 /* function for semaphore to release protection */
 int VOP(){
-return semop(sem_id, &OV,1);
+return semop(semaphore_id, &OV,1);
 }
 
 // * PROCESSES
@@ -117,16 +117,12 @@ int main(void) {
     // CHILD 1
     if(pid == 0) { 
         // WAITING
-        semaphore.sem_num = 0;
-        semaphore.sem_op = -1;
-        semaphore.sem_flg = SEM_UNDO;
-        semop(semaphore_id, &semaphore, 1);
+        POP();
         // CRITICAL
         process1(); 
         printf("From Process 1: counter = %d.\n", total->value);
         // EXITING
-        semaphore.sem_op = 1;
-        semop(semaphore_id, &semaphore, 1);
+        VOP();
         exit(0);
     }
     // PARENT
@@ -135,16 +131,12 @@ int main(void) {
         // CHILD 2
         if(pid == 0) { 
             // WAITING
-            semaphore.sem_num = 0;
-            semaphore.sem_op = -1;
-            semaphore.sem_flg = SEM_UNDO;
-            semop(semaphore_id, &semaphore, 1);
+            POP();
             // CRITICAL
             process2(); 
             printf("From Process 2: counter = %d.\n", total->value);
             // EXITING
-            semaphore.sem_op = 1;
-            semop(semaphore_id, &semaphore, 1);
+            VOP();
             exit(0); 
         }
         // PARENT
@@ -153,16 +145,12 @@ int main(void) {
             // CHILD 3
             if(pid == 0) { 
                 // WAITING
-                semaphore.sem_num = 0;
-                semaphore.sem_op = -1;
-                semaphore.sem_flg = SEM_UNDO;
-                semop(semaphore_id, &semaphore, 1);
+                POP();
                 // CRITICAL
                 process3(); 
                 printf("From Process 3: counter = %d.\n", total->value);
                 // EXITING
-                semaphore.sem_op = 1;
-                semop(semaphore_id, &semaphore, 1);
+                VOP();
                 exit(0);
             }
             // PARENT
@@ -171,16 +159,12 @@ int main(void) {
                 // CHILD 4
                 if(pid == 0) { 
                     // WAITING
-                    semaphore.sem_num = 0;
-                    semaphore.sem_op = -1;
-                    semaphore.sem_flg = SEM_UNDO;
-                    semop(semaphore_id, &semaphore, 1);
+                    POP();
                     // CRITICAL
                     process4(); 
                     printf("From Process 4: counter = %d.\n", total->value);
                     // EXITING
-                    semaphore.sem_op = 1;
-                    semop(semaphore_id, &semaphore, 1);
+                    VOP();
                     exit(0);
                 }
                 // PARENT
